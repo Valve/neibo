@@ -1,0 +1,44 @@
+<% if flash[:alert].present? %>
+  <h1 style="color:red"><%= flash[:alert] %>
+<% end %>
+<% if current_user %>
+  <h2>Hello, <%= current_user.name %></h2>
+
+  <h3>Search people near you: </h3>
+  <%= form_tag people_path, method: :get do %>
+    <div>
+      <%= text_field_tag :search, params[:search], 
+      placeholder: 'Search nearby people', type: :search, style: 'width: 400px' %>
+      <label>Search within mile radius:
+        <%= select_tag :radius, options_for_select([10, 50, 100]) %>
+      </label>
+    </div>
+    <div><%= submit_tag 'Search' %></div>
+  <% end %>
+  <% @people.each do |person| %>
+    <%= render partial: 'person', locals: {person: person} %>
+  <% end %>
+<% else %>
+  <h2>Hello, guest</h2>
+  <h3>
+    Fill your profile so that people could find you. 
+    Allow browser to access your location if you want to be found by people near you.
+  </h3>
+
+  <%= form_for @new_person do |f| %>
+    <div> <%= f.text_field :name, placeholder: 'Enter your name' %> </div>
+    <div> <%= f.text_area :about, placeholder: 'Tell about yourself' %> </div>
+    <div> <%= f.text_field :likes, placeholder: 'Stuff you like' %> </div>
+    <div> <%= f.text_field :dislikes, placeholder: 'Stuff you don\'t ' %> </div>
+    <%= f.hidden_field :lat %>
+    <%= f.hidden_field :lon %>
+    <div> <%= f.submit 'Save' %> </div>
+  <% end %>
+  <script>
+    navigator.geolocation.getCurrentPosition(function(position) {   
+      document.querySelector('#person_lat').value = position.coords.latitude;
+      document.querySelector('#person_lon').value = position.coords.longitude;
+    });
+  </script>
+<% end %>
+
